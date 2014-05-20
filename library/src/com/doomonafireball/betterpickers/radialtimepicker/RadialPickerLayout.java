@@ -448,6 +448,25 @@ public class RadialPickerLayout extends FrameLayout implements OnTouchListener {
             radialSelectorView = mMinuteRadialSelectorView;
             stepSize = MINUTE_VALUE_TO_DEGREES_STEP_SIZE;
         }
+
+      int value = degrees / stepSize;
+      if (currentShowing == HOUR_INDEX && mIs24HourMode && !isInnerCircle && degrees != 0) {
+        value += 12;
+      }
+
+      // XXX
+      if (currentShowing == HOUR_INDEX) {
+        if (value > 8) {
+          value = 8;
+        }
+
+        if (value < 2) {
+          value = 2;
+        }
+
+        degrees = value * stepSize;
+      }
+
         radialSelectorView.setSelection(degrees, isInnerCircle, forceDrawDot);
         radialSelectorView.invalidate();
 
@@ -465,10 +484,6 @@ public class RadialPickerLayout extends FrameLayout implements OnTouchListener {
             degrees = 0;
         }
 
-        int value = degrees / stepSize;
-        if (currentShowing == HOUR_INDEX && mIs24HourMode && !isInnerCircle && degrees != 0) {
-            value += 12;
-        }
         return value;
     }
 

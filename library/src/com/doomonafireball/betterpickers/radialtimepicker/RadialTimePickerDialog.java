@@ -409,7 +409,7 @@ public class RadialTimePickerDialog extends DialogFragment implements OnValueSel
     @Override
     public void onValueSelected(int pickerIndex, int newValue, boolean autoAdvance) {
         if (pickerIndex == HOUR_INDEX) {
-            setHour(newValue, false);
+          setHour(newValue, false);
             String announcement = String.format("%d", newValue);
             if (mAllowAutoAdvance && autoAdvance) {
                 setCurrentItemShowing(MINUTE_INDEX, true, true, false);
