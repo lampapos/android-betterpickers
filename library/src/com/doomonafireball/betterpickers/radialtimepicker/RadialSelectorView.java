@@ -16,6 +16,10 @@
 
 package com.doomonafireball.betterpickers.radialtimepicker;
 
+import android.animation.Keyframe;
+import android.animation.ObjectAnimator;
+import android.animation.PropertyValuesHolder;
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
@@ -26,11 +30,6 @@ import android.view.View;
 
 import com.doomonafireball.betterpickers.R;
 import com.doomonafireball.betterpickers.Utils;
-import com.nineoldandroids.animation.Keyframe;
-import com.nineoldandroids.animation.ObjectAnimator;
-import com.nineoldandroids.animation.PropertyValuesHolder;
-import com.nineoldandroids.animation.ValueAnimator;
-import com.nineoldandroids.view.animation.AnimatorProxy;
 
 /**
  * View to show what number is selected. This will draw a blue circle over the number, with a blue line coming from the
@@ -363,7 +362,7 @@ public class RadialSelectorView extends View {
         PropertyValuesHolder fadeOut = PropertyValuesHolder.ofKeyframe("alpha", kf0, kf1);
 
         ObjectAnimator disappearAnimator = ObjectAnimator.ofPropertyValuesHolder(
-                AnimatorProxy.NEEDS_PROXY ? AnimatorProxy.wrap(this) : this, radiusDisappear, fadeOut).setDuration(
+                this, radiusDisappear, fadeOut).setDuration(
                 duration);
         disappearAnimator.addUpdateListener(mInvalidateUpdateListener);
 
@@ -403,7 +402,7 @@ public class RadialSelectorView extends View {
         PropertyValuesHolder fadeIn = PropertyValuesHolder.ofKeyframe("alpha", kf0, kf1, kf2);
 
         ObjectAnimator reappearAnimator = ObjectAnimator.ofPropertyValuesHolder(
-                AnimatorProxy.NEEDS_PROXY ? AnimatorProxy.wrap(this) : this, radiusReappear, fadeIn)
+                this, radiusReappear, fadeIn)
                 .setDuration(totalDuration);
         reappearAnimator.addUpdateListener(mInvalidateUpdateListener);
         return reappearAnimator;

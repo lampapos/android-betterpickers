@@ -1,27 +1,31 @@
-*.apk
-*.ap_
-*.dex
-*.class
-*.iml
-.gitignore~
-.idea/
-.DS_STORE
-.classpath
-.settings/
-bin/
-gen/
-local.properties
-target/
-classes/
-gen-external-apklibs/
-out/
-tmp/
-.project
-target
-release.properties
-pom.xml.*
+# OS junk
+.DS_Store
+*~
 
-#Command line
+# Local properties
+dev.properties
 local.properties
-build.xml
-proguard-project.txt
+
+# Generated
+gen
+bin
+tmp
+.crashlytics_data
+com_crashlytics_export_strings.xml
+
+# Eclipse
+.project
+.classpath
+.settings
+.checkstyle
+
+# IDEA
+out
+.idea
+*.iml
+
+# Gradle
+build
+!**/cordova/build
+!**/src/**/build
+.gradle

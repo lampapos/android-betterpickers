@@ -1,19 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.doomonafireball.betterpickers.sample"
-    android:versionCode="7"
-    android:versionName="1.5.2">
-
-    <uses-sdk
-        android:minSdkVersion="10"
-        android:targetSdkVersion="17" />
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.doomonafireball.betterpickers.sample">
 
     <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
+        android:allowBackup="false"
         android:label="BetterPickers Samples"
         android:icon="@drawable/ic_launcher"
-        android:theme="@style/Theme.Sherlock.Light.DarkActionBar">
+        android:theme="@style/Theme.AppCompat.Light.DarkActionBar">
         <activity
             android:name=".ListSamples"
             android:label="BetterPickers Samples">
@@ -25,7 +19,7 @@
         <activity
             android:name=".activity.timepicker.SampleTimeDefault"
             android:label="Time/Default"
-            android:theme="@style/Theme.Sherlock">
+            android:theme="@style/Theme.AppCompat">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="com.doomonafireball.betterpickers.sample.SAMPLE" />
@@ -82,7 +76,7 @@
         <activity
             android:name=".activity.numberpicker.SampleNumberDefault"
             android:label="Number/Default"
-            android:theme="@style/Theme.Sherlock">
+            android:theme="@style/Theme.AppCompat">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="com.doomonafireball.betterpickers.sample.SAMPLE" />
@@ -99,7 +93,7 @@
         <activity
             android:name=".activity.numberpicker.SampleNumberWithOptions"
             android:label="Number/Additional Options"
-            android:theme="@style/Theme.Sherlock">
+            android:theme="@style/Theme.AppCompat">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="com.doomonafireball.betterpickers.sample.SAMPLE" />
@@ -148,7 +142,7 @@
         <activity
             android:name=".activity.datepicker.SampleDateDefault"
             android:label="Date/Default"
-            android:theme="@style/Theme.Sherlock">
+            android:theme="@style/Theme.AppCompat">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="com.doomonafireball.betterpickers.sample.SAMPLE" />
@@ -173,7 +167,7 @@
         <activity
             android:name=".activity.datepicker.SampleDatePreset"
             android:label="Date/Preset (Not Recommended)"
-            android:theme="@style/Theme.Sherlock">
+            android:theme="@style/Theme.AppCompat">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="com.doomonafireball.betterpickers.sample.SAMPLE" />

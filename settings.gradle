@@ -1,0 +1,5 @@
+include ':pickers'
+project(':pickers').projectDir = new File(rootDir, "library")
+include ':pickers-sample'
+project(':pickers-sample').projectDir = new File(rootDir, "sample")
+

@@ -16,18 +16,13 @@
 
 package com.doomonafireball.betterpickers.radialtimepicker;
 
-import com.doomonafireball.betterpickers.HapticFeedbackController;
-import com.doomonafireball.betterpickers.R;
-import com.nineoldandroids.animation.AnimatorSet;
-import com.nineoldandroids.animation.ObjectAnimator;
-import com.nineoldandroids.view.ViewHelper;
-
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.SystemClock;
 import android.support.v4.view.accessibility.AccessibilityManagerCompat;
 import android.text.format.DateUtils;
 import android.text.format.Time;
@@ -42,6 +37,9 @@ import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.FrameLayout;
+
+import com.doomonafireball.betterpickers.HapticFeedbackController;
+import com.doomonafireball.betterpickers.R;
 
 public class RadialPickerLayout extends FrameLayout implements OnTouchListener {
 
@@ -386,7 +384,7 @@ public class RadialPickerLayout extends FrameLayout implements OnTouchListener {
      * the input will be "snapped" to the closest visible degrees.
      *
      * @param degrees The input degrees
-     * @param forceAboveOrBelow The output may be forced to either the higher or lower step, or may be allowed to snap
+     * @param forceHigherOrLower The output may be forced to either the higher or lower step, or may be allowed to snap
      * to whichever is closer. Use 1 to force strictly higher, -1 to force strictly lower, and 0 to snap to the closer
      * one.
      * @return output degrees, will be a multiple of 30
@@ -561,10 +559,10 @@ public class RadialPickerLayout extends FrameLayout implements OnTouchListener {
         } else {
             int hourAlpha = (index == HOUR_INDEX) ? 255 : 0;
             int minuteAlpha = (index == MINUTE_INDEX) ? 255 : 0;
-            ViewHelper.setAlpha(mHourRadialTextsView, hourAlpha);
-            ViewHelper.setAlpha(mHourRadialSelectorView, hourAlpha);
-            ViewHelper.setAlpha(mMinuteRadialTextsView, minuteAlpha);
-            ViewHelper.setAlpha(mMinuteRadialSelectorView, minuteAlpha);
+            mHourRadialTextsView.setAlpha(hourAlpha);
+            mHourRadialSelectorView.setAlpha(hourAlpha);
+            mMinuteRadialTextsView.setAlpha(minuteAlpha);
+            mMinuteRadialSelectorView.setAlpha(minuteAlpha);
         }
 
     }

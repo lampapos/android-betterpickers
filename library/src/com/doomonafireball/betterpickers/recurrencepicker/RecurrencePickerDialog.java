@@ -16,11 +16,6 @@
 
 package com.doomonafireball.betterpickers.recurrencepicker;
 
-import com.doomonafireball.betterpickers.R;
-import com.doomonafireball.betterpickers.calendardatepicker.CalendarDatePickerDialog;
-
-import org.jraf.android.backport.switchwidget.Switch;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
@@ -30,7 +25,6 @@ import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.view.ViewConfigurationCompat;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -57,10 +51,14 @@ import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
+import android.widget.Switch;
 import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
+
+import com.doomonafireball.betterpickers.R;
+import com.doomonafireball.betterpickers.calendardatepicker.CalendarDatePickerDialog;
 
 import java.text.DateFormatSymbols;
 import java.util.ArrayList;
