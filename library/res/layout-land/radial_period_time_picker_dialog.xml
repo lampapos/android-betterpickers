@@ -44,9 +44,9 @@
               android:layout_margin="10dp"
               android:textAllCaps="false"/>
             <include
-                layout="@layout/radial_time_header_label"
+                layout="@layout/radial_period_time_header_label"
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/header_height"
+                android:layout_height="wrap_content"
                 android:layout_gravity="center" />
         </LinearLayout>
         <View
@@ -64,7 +64,7 @@
             android:textSize="@dimen/done_label_size"
             android:textColor="@color/done_text_color" />
     </LinearLayout>
-    <com.doomonafireball.betterpickers.radialtimepicker.RadialPickerLayout
+    <com.doomonafireball.betterpickers.radialtimepicker.RadialPeriodPickerLayout
         android:id="@+id/time_picker"
         android:layout_width="@dimen/picker_dimen"
         android:layout_height="match_parent"

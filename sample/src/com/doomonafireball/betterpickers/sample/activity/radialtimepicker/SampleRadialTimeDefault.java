@@ -1,17 +1,18 @@
 package com.doomonafireball.betterpickers.sample.activity.radialtimepicker;
 
-import com.doomonafireball.betterpickers.radialtimepicker.RadialTimePickerDialog;
-import com.doomonafireball.betterpickers.sample.R;
-import com.doomonafireball.betterpickers.sample.activity.BaseSampleActivity;
-
-import org.joda.time.DateTime;
-
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
 import android.text.format.DateFormat;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+
+import com.doomonafireball.betterpickers.radialtimepicker.RadialPeriodTimePickerDialog;
+import com.doomonafireball.betterpickers.radialtimepicker.RadialTimePickerDialog;
+import com.doomonafireball.betterpickers.sample.R;
+import com.doomonafireball.betterpickers.sample.activity.BaseSampleActivity;
+
+import org.joda.time.DateTime;
 
 /**
  * User: derek Date: 3/17/13 Time: 3:59 PM
@@ -49,9 +50,9 @@ public class SampleRadialTimeDefault extends BaseSampleActivity
             @Override
             public void onClick(View v) {
                 DateTime now = DateTime.now();
-                RadialTimePickerDialog timePickerDialog = RadialTimePickerDialog
+              RadialPeriodTimePickerDialog timePickerDialog = RadialPeriodTimePickerDialog
                         .newInstance(SampleRadialTimeDefault.this, now.getHourOfDay(), now.getMinuteOfHour(),
-                                DateFormat.is24HourFormat(SampleRadialTimeDefault.this));
+                            DateFormat.is24HourFormat(SampleRadialTimeDefault.this), now.toDate(), now.toDate(), now.plusMinutes(15 * 5).toDate(), 15);
                 if (mHasDialogFrame) {
                     FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 

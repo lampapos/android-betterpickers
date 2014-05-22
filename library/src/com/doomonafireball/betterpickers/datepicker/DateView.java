@@ -1,10 +1,5 @@
 package com.doomonafireball.betterpickers.datepicker;
 
-import com.doomonafireball.betterpickers.widget.PickerLinearLayout;
-import com.doomonafireball.betterpickers.R;
-import com.doomonafireball.betterpickers.widget.UnderlinePageIndicatorPicker;
-import com.doomonafireball.betterpickers.widget.ZeroTopPaddingTextView;
-
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
@@ -13,6 +8,11 @@ import android.graphics.Typeface;
 import android.text.format.DateFormat;
 import android.util.AttributeSet;
 import android.view.View;
+
+import com.doomonafireball.betterpickers.R;
+import com.doomonafireball.betterpickers.widget.PickerLinearLayout;
+import com.doomonafireball.betterpickers.widget.UnderlinePageIndicatorPicker;
+import com.doomonafireball.betterpickers.widget.ZeroTopPaddingTextView;
 
 public class DateView extends PickerLinearLayout {
 
@@ -43,15 +43,20 @@ public class DateView extends PickerLinearLayout {
     public DateView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
-        mAndroidClockMonoThin =
-                Typeface.createFromAsset(context.getAssets(), "fonts/AndroidClockMono-Thin.ttf");
-        mOriginalNumberTypeface =
-                Typeface.createFromAsset(context.getAssets(), "fonts/Roboto-Bold.ttf");
+        if (isInEditMode()) {
+          mAndroidClockMonoThin = Typeface.MONOSPACE;
+          mOriginalNumberTypeface = Typeface.DEFAULT_BOLD;
+        } else {
+          mAndroidClockMonoThin =
+              Typeface.createFromAsset(context.getAssets(), "fonts/AndroidClockMono-Thin.ttf");
+          mOriginalNumberTypeface =
+              Typeface.createFromAsset(context.getAssets(), "fonts/Roboto-Bold.ttf");
+        }
 
         // Init defaults
         mTitleColor = getResources().getColorStateList(R.color.dialog_text_color_holo_dark);
 
-        setWillNotDraw(false);
+        setWillNotDraw(true);
     }
 
     /**
@@ -178,13 +183,16 @@ public class DateView extends PickerLinearLayout {
      */
     public void setUnderlinePage(UnderlinePageIndicatorPicker indicator) {
         mUnderlinePageIndicatorPicker = indicator;
+        setWillNotDraw(indicator == null);
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        mUnderlinePageIndicatorPicker.setTitleView(this);
+        if (mUnderlinePageIndicatorPicker != null) {
+          mUnderlinePageIndicatorPicker.setTitleView(this);
+        }
     }
 
     /**

@@ -4,7 +4,7 @@
     <dimen name="date_viewpager_height">189dip</dimen>
 
     <!-- From AOSP -->
-    <dimen name="dialog_height">200dip</dimen>
+    <dimen name="dialog_height">300dip</dimen>
     <dimen name="left_side_width">250dip</dimen>
 
     <dimen name="selected_date_year_size">30dp</dimen>

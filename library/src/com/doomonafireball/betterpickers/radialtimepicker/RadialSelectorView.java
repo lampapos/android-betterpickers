@@ -24,7 +24,6 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.RectF;
 import android.util.Log;
 import android.view.View;
 
@@ -45,9 +44,9 @@ public class RadialSelectorView extends View {
     // Alpha level for the line.
     private static final int FULL_ALPHA = Utils.FULL_ALPHA;
 
-    private final Paint mPaint = new Paint();
+    final Paint mPaint = new Paint();
 
-    private boolean mIsInitialized;
+    boolean mIsInitialized;
     private boolean mDrawValuesReady;
 
     private float mCircleRadiusMultiplier;
@@ -61,19 +60,19 @@ public class RadialSelectorView extends View {
     private boolean mHasInnerCircle;
     private int mSelectionAlpha;
 
-    private int mXCenter;
-    private int mYCenter;
+    int mXCenter;
+    int mYCenter;
     private int mCircleRadius;
     private float mTransitionMidRadiusMultiplier;
     private float mTransitionEndRadiusMultiplier;
-    private int mLineLength;
+    int mLineLength;
     private int mSelectionRadius;
     private InvalidateUpdateListener mInvalidateUpdateListener;
 
     private int mSelectionDegrees;
-    private double mSelectionRadians;
+    double mSelectionRadians;
     private boolean mForceDrawDot;
-    private RectF mCircleRect;
+
 
     public RadialSelectorView(Context context) {
         super(context);
@@ -140,8 +139,6 @@ public class RadialSelectorView extends View {
         mInvalidateUpdateListener = new InvalidateUpdateListener();
 
         setSelection(selectionDegrees, isInnerCircle, false);
-
-        mCircleRect = new RectF();
 
         mIsInitialized = true;
     }
@@ -323,22 +320,6 @@ public class RadialSelectorView extends View {
         mPaint.setAlpha(255);
         mPaint.setStrokeWidth(1);
         canvas.drawLine(mXCenter, mYCenter, pointX, pointY, mPaint);
-
-        // XXX
-      int lineLength = mLineLength;
-      double endAngle = mSelectionRadians + Math.toRadians(90);
-      pointX = mXCenter + (int) (lineLength * Math.sin(endAngle));
-      pointY = mYCenter - (int) (lineLength * Math.cos(endAngle));
-
-      canvas.drawLine(mXCenter, mYCenter, pointX, pointY, mPaint);
-
-      mCircleRect = new RectF(mXCenter - mLineLength, mYCenter - mLineLength,
-          mXCenter + mLineLength, mYCenter + mLineLength);
-
-      mPaint.setAlpha(100);
-      canvas.drawArc(mCircleRect,
-          (float) Math.toDegrees(mSelectionRadians) - 90,
-          90, true, mPaint);
     }
 
     public ObjectAnimator getDisappearAnimator() {

@@ -49,8 +49,8 @@ public class RadialPickerLayout extends FrameLayout implements OnTouchListener {
     private final int TAP_TIMEOUT;
 
     private static final int VISIBLE_DEGREES_STEP_SIZE = 30;
-    private static final int HOUR_VALUE_TO_DEGREES_STEP_SIZE = VISIBLE_DEGREES_STEP_SIZE;
-    private static final int MINUTE_VALUE_TO_DEGREES_STEP_SIZE = 6;
+    static final int HOUR_VALUE_TO_DEGREES_STEP_SIZE = VISIBLE_DEGREES_STEP_SIZE;
+    static final int MINUTE_VALUE_TO_DEGREES_STEP_SIZE = 6;
     private static final int HOUR_INDEX = RadialTimePickerDialog.HOUR_INDEX;
     private static final int MINUTE_INDEX = RadialTimePickerDialog.MINUTE_INDEX;
     private static final int AMPM_INDEX = RadialTimePickerDialog.AMPM_INDEX;
@@ -73,8 +73,8 @@ public class RadialPickerLayout extends FrameLayout implements OnTouchListener {
     private AmPmCirclesView mAmPmCirclesView;
     private RadialTextsView mHourRadialTextsView;
     private RadialTextsView mMinuteRadialTextsView;
-    private RadialSelectorView mHourRadialSelectorView;
-    private RadialSelectorView mMinuteRadialSelectorView;
+    RadialSelectorView mHourRadialSelectorView;
+    RadialSelectorView mMinuteRadialSelectorView;
     private View mGrayBox;
 
     private int[] mSnapPrefer30sMap;
@@ -115,9 +115,9 @@ public class RadialPickerLayout extends FrameLayout implements OnTouchListener {
         mMinuteRadialTextsView = new RadialTextsView(context);
         addView(mMinuteRadialTextsView);
 
-        mHourRadialSelectorView = new RadialSelectorView(context);
+        mHourRadialSelectorView = newRadialSelectorView(context);
         addView(mHourRadialSelectorView);
-        mMinuteRadialSelectorView = new RadialSelectorView(context);
+        mMinuteRadialSelectorView = newRadialSelectorView(context);
         addView(mMinuteRadialSelectorView);
 
         // Prepare mapping to snap touchable degrees to selectable degrees.
@@ -133,9 +133,15 @@ public class RadialPickerLayout extends FrameLayout implements OnTouchListener {
         mGrayBox.setVisibility(View.INVISIBLE);
         addView(mGrayBox);
 
-        mAccessibilityManager = (AccessibilityManager) context.getSystemService(Context.ACCESSIBILITY_SERVICE);
+        if (!isInEditMode()) {
+          mAccessibilityManager = (AccessibilityManager) context.getSystemService(Context.ACCESSIBILITY_SERVICE);
+        }
 
         mTimeInitialized = false;
+    }
+
+    protected RadialSelectorView newRadialSelectorView(final Context context) {
+      return new RadialSelectorView(context);
     }
 
     /**
@@ -447,24 +453,6 @@ public class RadialPickerLayout extends FrameLayout implements OnTouchListener {
             stepSize = MINUTE_VALUE_TO_DEGREES_STEP_SIZE;
         }
 
-      int value = degrees / stepSize;
-      if (currentShowing == HOUR_INDEX && mIs24HourMode && !isInnerCircle && degrees != 0) {
-        value += 12;
-      }
-
-      // XXX
-      if (currentShowing == HOUR_INDEX) {
-        if (value > 8) {
-          value = 8;
-        }
-
-        if (value < 2) {
-          value = 2;
-        }
-
-        degrees = value * stepSize;
-      }
-
         radialSelectorView.setSelection(degrees, isInnerCircle, forceDrawDot);
         radialSelectorView.invalidate();
 
@@ -480,6 +468,11 @@ public class RadialPickerLayout extends FrameLayout implements OnTouchListener {
             }
         } else if (degrees == 360 && currentShowing == MINUTE_INDEX) {
             degrees = 0;
+        }
+
+        int value = degrees / stepSize;
+        if (currentShowing == HOUR_INDEX && mIs24HourMode && !isInnerCircle && degrees != 0) {
+          value += 12;
         }
 
         return value;
@@ -696,8 +689,8 @@ public class RadialPickerLayout extends FrameLayout implements OnTouchListener {
                     if (isTouchingAmOrPm == mIsTouchingAmOrPm) {
                         mAmPmCirclesView.setAmOrPm(isTouchingAmOrPm);
                         if (getIsCurrentlyAmOrPm() != isTouchingAmOrPm) {
-                            mListener.onValueSelected(AMPM_INDEX, mIsTouchingAmOrPm, false);
                             setValueForItem(AMPM_INDEX, isTouchingAmOrPm);
+                            mListener.onValueSelected(AMPM_INDEX, isTouchingAmOrPm, false);
                         }
                     }
                     mIsTouchingAmOrPm = -1;

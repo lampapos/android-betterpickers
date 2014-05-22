@@ -22,7 +22,7 @@
     android:focusable="true" >
     <LinearLayout
         android:id="@+id/time_display_background"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@color/white"
         android:orientation="vertical">
@@ -35,12 +35,12 @@
           android:layout_margin="10dp"
           android:textAllCaps="false"/>
         <include
-            layout="@layout/radial_time_header_label"
-            android:layout_width="match_parent"
+            layout="@layout/radial_period_time_header_label"
+            android:layout_width="wrap_content"
             android:layout_height="@dimen/header_height"
             android:layout_gravity="center" />
     </LinearLayout>
-    <com.doomonafireball.betterpickers.radialtimepicker.RadialPickerLayout
+    <com.doomonafireball.betterpickers.radialtimepicker.RadialPeriodPickerLayout
         android:id="@+id/time_picker"
         android:layout_height="@dimen/picker_dimen"
         android:layout_width="wrap_content"

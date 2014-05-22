@@ -41,7 +41,9 @@ import com.doomonafireball.betterpickers.Utils;
 import com.doomonafireball.betterpickers.radialtimepicker.RadialPickerLayout.OnValueSelectedListener;
 
 import java.text.DateFormatSymbols;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Locale;
 
 /**
@@ -58,6 +60,7 @@ public class RadialTimePickerDialog extends DialogFragment implements OnValueSel
     private static final String KEY_IN_KB_MODE = "in_kb_mode";
     private static final String KEY_TYPED_TIMES = "typed_times";
     private static final String KEY_DARK_THEME = "dark_theme";
+    private static final String KEY_DATE = "date";
 
     public static final int HOUR_INDEX = 0;
     public static final int MINUTE_INDEX = 1;
@@ -71,11 +74,14 @@ public class RadialTimePickerDialog extends DialogFragment implements OnValueSel
     // Delay before starting the pulse animation, in ms.
     private static final int PULSE_ANIMATOR_DELAY = 300;
 
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("EEEE, MMM dd yyyy");
+
     private OnDialogDismissListener mDimissCallback;
     private OnTimeSetListener mCallback;
 
     private HapticFeedbackController mHapticFeedbackController;
 
+    private TextView mDateView;
     private TextView mDoneButton;
     private TextView mHourView;
     private TextView mHourSpaceView;
@@ -83,23 +89,24 @@ public class RadialTimePickerDialog extends DialogFragment implements OnValueSel
     private TextView mMinuteSpaceView;
     private TextView mAmPmTextView;
     private View mAmPmHitspace;
-    private RadialPickerLayout mTimePicker;
+    RadialPickerLayout mTimePicker;
 
-    private int mSelectedColor;
-    private int mUnselectedColor;
-    private String mAmText;
-    private String mPmText;
+    int mSelectedColor;
+    int mUnselectedColor;
+    String mAmText;
+    String mPmText;
     private String mDoneText;
 
     private boolean mAllowAutoAdvance;
-    private int mInitialHourOfDay;
+    int mInitialHourOfDay;
     private int mInitialMinute;
-    private boolean mIs24HourMode;
+    boolean mIs24HourMode;
     private boolean mThemeDark;
+    Date mDate;
 
     // For hardware IME input.
     private char mPlaceholderText;
-    private String mDoublePlaceholderText;
+    String mDoublePlaceholderText;
     private String mDeletedKeyFormat;
     private boolean mInKbMode;
     private ArrayList<Integer> mTypedTimes;
@@ -132,14 +139,14 @@ public class RadialTimePickerDialog extends DialogFragment implements OnValueSel
     }
 
     public static RadialTimePickerDialog newInstance(OnTimeSetListener callback,
-            int hourOfDay, int minute, boolean is24HourMode) {
+            int hourOfDay, int minute, boolean is24HourMode, Date date) {
         RadialTimePickerDialog ret = new RadialTimePickerDialog();
-        ret.initialize(callback, hourOfDay, minute, is24HourMode);
+        ret.initialize(callback, hourOfDay, minute, is24HourMode, date);
         return ret;
     }
 
     public void initialize(OnTimeSetListener callback,
-            int hourOfDay, int minute, boolean is24HourMode) {
+            int hourOfDay, int minute, boolean is24HourMode, Date date) {
         mCallback = callback;
 
         mInitialHourOfDay = hourOfDay;
@@ -147,6 +154,8 @@ public class RadialTimePickerDialog extends DialogFragment implements OnValueSel
         mIs24HourMode = is24HourMode;
         mInKbMode = false;
         mThemeDark = false;
+
+        mDate = date == null ? new Date() : date;
     }
 
     /**
@@ -178,6 +187,8 @@ public class RadialTimePickerDialog extends DialogFragment implements OnValueSel
         mDoneText = text;
     }
 
+    protected int getLayoutId() { return R.layout.radial_time_picker_dialog; }
+
     @Override
     public void onDismiss(DialogInterface dialoginterface) {
         super.onDismiss(dialoginterface);
@@ -197,6 +208,7 @@ public class RadialTimePickerDialog extends DialogFragment implements OnValueSel
             mIs24HourMode = savedInstanceState.getBoolean(KEY_IS_24_HOUR_VIEW);
             mInKbMode = savedInstanceState.getBoolean(KEY_IN_KB_MODE);
             mThemeDark = savedInstanceState.getBoolean(KEY_DARK_THEME);
+            mDate = new Date(savedInstanceState.getLong(KEY_DATE));
         }
     }
 
@@ -207,7 +219,7 @@ public class RadialTimePickerDialog extends DialogFragment implements OnValueSel
             getDialog().getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         }
 
-        View view = inflater.inflate(R.layout.radial_time_picker_dialog, null);
+        View view = inflater.inflate(getLayoutId(), null);
         KeyboardListener keyboardListener = new KeyboardListener();
         view.findViewById(R.id.time_picker_dialog).setOnKeyListener(keyboardListener);
 
@@ -219,6 +231,7 @@ public class RadialTimePickerDialog extends DialogFragment implements OnValueSel
         mSelectedColor = res.getColor(mThemeDark ? R.color.red : R.color.blue);
         mUnselectedColor = res.getColor(mThemeDark ? R.color.white : R.color.numbers_text_color);
 
+        mDateView = (TextView) view.findViewById(R.id.time_date);
         mHourView = (TextView) view.findViewById(R.id.hours);
         mHourView.setOnKeyListener(keyboardListener);
         mHourSpaceView = (TextView) view.findViewById(R.id.hour_space);
@@ -285,36 +298,8 @@ public class RadialTimePickerDialog extends DialogFragment implements OnValueSel
 
         // Enable or disable the AM/PM view.
         mAmPmHitspace = view.findViewById(R.id.ampm_hitspace);
-        if (mIs24HourMode) {
-            mAmPmTextView.setVisibility(View.GONE);
-
-            RelativeLayout.LayoutParams paramsSeparator = new RelativeLayout.LayoutParams(
-                    LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-            paramsSeparator.addRule(RelativeLayout.CENTER_IN_PARENT);
-            TextView separatorView = (TextView) view.findViewById(R.id.separator);
-            separatorView.setLayoutParams(paramsSeparator);
-        } else {
-            mAmPmTextView.setVisibility(View.VISIBLE);
-            updateAmPmDisplay(mInitialHourOfDay < 12 ? AM : PM);
-            mAmPmHitspace.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    tryVibrate();
-                    int amOrPm = mTimePicker.getIsCurrentlyAmOrPm();
-                    if (amOrPm == AM) {
-                        amOrPm = PM;
-                    } else if (amOrPm == PM) {
-                        amOrPm = AM;
-                    }
-                    updateAmPmDisplay(amOrPm);
-                    mTimePicker.setAmOrPm(amOrPm);
-                }
-            });
-        }
 
         mAllowAutoAdvance = true;
-        setHour(mInitialHourOfDay, true);
-        setMinute(mInitialMinute);
 
         // Set up for keyboard mode.
         mDoublePlaceholderText = res.getString(R.string.time_placeholder);
@@ -330,35 +315,76 @@ public class RadialTimePickerDialog extends DialogFragment implements OnValueSel
             mTypedTimes = new ArrayList<Integer>();
         }
 
-        // Set the theme at the end so that the initialize()s above don't counteract the theme.
-        mTimePicker.setTheme(getActivity().getApplicationContext(), mThemeDark);
-        // Prepare some colors to use.
-        int white = res.getColor(R.color.white);
-        int circleBackground = res.getColor(R.color.circle_background);
-        int line = res.getColor(R.color.line_background);
-        int timeDisplay = res.getColor(R.color.numbers_text_color);
-        ColorStateList doneTextColor = res.getColorStateList(R.color.done_text_color);
-        int doneBackground = R.drawable.done_background_color;
-
-        int darkGray = res.getColor(R.color.dark_gray);
-        int lightGray = res.getColor(R.color.light_gray);
-        int darkLine = res.getColor(R.color.line_dark);
-        ColorStateList darkDoneTextColor = res.getColorStateList(R.color.done_text_color_dark);
-        int darkDoneBackground = R.drawable.done_background_color_dark;
-
-        // Set the colors for each view based on the theme.
-        view.findViewById(R.id.time_display_background).setBackgroundColor(mThemeDark ? darkGray : white);
-        view.findViewById(R.id.time_display).setBackgroundColor(mThemeDark ? darkGray : white);
-        ((TextView) view.findViewById(R.id.separator)).setTextColor(mThemeDark ? white : timeDisplay);
-        ((TextView) view.findViewById(R.id.ampm_label)).setTextColor(mThemeDark ? white : timeDisplay);
-        view.findViewById(R.id.line).setBackgroundColor(mThemeDark ? darkLine : line);
-        mDoneButton.setTextColor(mThemeDark ? darkDoneTextColor : doneTextColor);
-        mTimePicker.setBackgroundColor(mThemeDark ? lightGray : circleBackground);
-        mDoneButton.setBackgroundResource(mThemeDark ? darkDoneBackground : doneBackground);
         return view;
     }
 
-    @Override
+  @Override
+  public void onViewCreated(final View view, final Bundle savedInstanceState) {
+    super.onViewCreated(view, savedInstanceState);
+
+    Resources res = getResources();
+
+    if (mIs24HourMode) {
+      mAmPmTextView.setVisibility(View.GONE);
+
+      RelativeLayout.LayoutParams paramsSeparator = new RelativeLayout.LayoutParams(
+          LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+      paramsSeparator.addRule(RelativeLayout.CENTER_IN_PARENT);
+      TextView separatorView = (TextView) view.findViewById(R.id.separator);
+      separatorView.setLayoutParams(paramsSeparator);
+    } else {
+      mAmPmTextView.setVisibility(View.VISIBLE);
+      updateAmPmDisplay(mInitialHourOfDay < 12 ? AM : PM);
+      mAmPmHitspace.setOnClickListener(new OnClickListener() {
+        @Override
+        public void onClick(View v) {
+          tryVibrate();
+          int amOrPm = mTimePicker.getIsCurrentlyAmOrPm();
+          if (amOrPm == AM) {
+            amOrPm = PM;
+          } else if (amOrPm == PM) {
+            amOrPm = AM;
+          }
+          updateAmPmDisplay(amOrPm);
+          mTimePicker.setAmOrPm(amOrPm);
+        }
+      });
+    }
+
+    setHour(mInitialHourOfDay, true);
+    setMinute(mInitialMinute);
+
+    // Set the theme at the end so that the initialize()s above don't counteract the theme.
+    mTimePicker.setTheme(getActivity().getApplicationContext(), mThemeDark);
+    // Prepare some colors to use.
+    int white = res.getColor(R.color.white);
+    int circleBackground = res.getColor(R.color.circle_background);
+    int line = res.getColor(R.color.line_background);
+    int timeDisplay = res.getColor(R.color.numbers_text_color);
+    ColorStateList doneTextColor = res.getColorStateList(R.color.done_text_color);
+    int doneBackground = R.drawable.done_background_color;
+
+    int darkGray = res.getColor(R.color.dark_gray);
+    int lightGray = res.getColor(R.color.light_gray);
+    int darkLine = res.getColor(R.color.line_dark);
+    ColorStateList darkDoneTextColor = res.getColorStateList(R.color.done_text_color_dark);
+    int darkDoneBackground = R.drawable.done_background_color_dark;
+
+    // Set the colors for each view based on the theme.
+    view.findViewById(R.id.time_display_background).setBackgroundColor(mThemeDark ? darkGray : white);
+    view.findViewById(R.id.time_display).setBackgroundColor(mThemeDark ? darkGray : white);
+    ((TextView) view.findViewById(R.id.separator)).setTextColor(mThemeDark ? white : timeDisplay);
+    ((TextView) view.findViewById(R.id.ampm_label)).setTextColor(mThemeDark ? white : timeDisplay);
+    view.findViewById(R.id.line).setBackgroundColor(mThemeDark ? darkLine : line);
+    mDoneButton.setTextColor(mThemeDark ? darkDoneTextColor : doneTextColor);
+    mTimePicker.setBackgroundColor(mThemeDark ? lightGray : circleBackground);
+    mDoneButton.setBackgroundResource(mThemeDark ? darkDoneBackground : doneBackground);
+
+    // Set date
+    mDateView.setText(DATE_FORMAT.format(mDate));
+  }
+
+  @Override
     public void onResume() {
         super.onResume();
         mHapticFeedbackController.start();
@@ -374,7 +400,7 @@ public class RadialTimePickerDialog extends DialogFragment implements OnValueSel
         mHapticFeedbackController.tryVibrate();
     }
 
-    private void updateAmPmDisplay(int amOrPm) {
+    void updateAmPmDisplay(int amOrPm) {
         if (amOrPm == AM) {
             mAmPmTextView.setText(mAmText);
             Utils.tryAccessibilityAnnounce(mTimePicker, mAmText);
@@ -400,6 +426,7 @@ public class RadialTimePickerDialog extends DialogFragment implements OnValueSel
                 outState.putIntegerArrayList(KEY_TYPED_TIMES, mTypedTimes);
             }
             outState.putBoolean(KEY_DARK_THEME, mThemeDark);
+            outState.putLong(KEY_DATE, mDate.getTime());
         }
     }
 
@@ -409,7 +436,7 @@ public class RadialTimePickerDialog extends DialogFragment implements OnValueSel
     @Override
     public void onValueSelected(int pickerIndex, int newValue, boolean autoAdvance) {
         if (pickerIndex == HOUR_INDEX) {
-          setHour(newValue, false);
+            setHour(newValue, false);
             String announcement = String.format("%d", newValue);
             if (mAllowAutoAdvance && autoAdvance) {
                 setCurrentItemShowing(MINUTE_INDEX, true, true, false);
@@ -431,19 +458,22 @@ public class RadialTimePickerDialog extends DialogFragment implements OnValueSel
         }
     }
 
-    private void setHour(int value, boolean announce) {
-        String format;
-        if (mIs24HourMode) {
-            format = "%02d";
-        } else {
-            format = "%d";
-            value = value % 12;
-            if (value == 0) {
-                value = 12;
-            }
+    String formatHour(int value) {
+      String format;
+      if (mIs24HourMode) {
+        format = "%02d";
+      } else {
+        format = "%d";
+        value = value % 12;
+        if (value == 0) {
+          value = 12;
         }
+      }
 
-        CharSequence text = String.format(format, value);
+      return String.format(format, value);
+    }
+    void setHour(int value, boolean announce) {
+        CharSequence text = formatHour(value);
         mHourView.setText(text);
         mHourSpaceView.setText(text);
         if (announce) {
@@ -451,18 +481,22 @@ public class RadialTimePickerDialog extends DialogFragment implements OnValueSel
         }
     }
 
-    private void setMinute(int value) {
-        if (value == 60) {
-            value = 0;
-        }
-        CharSequence text = String.format(Locale.getDefault(), "%02d", value);
+    String formatMinute(final int value) {
+      int val = value;
+      if (val == 60) {
+        val = 0;
+      }
+      return String.format(Locale.getDefault(), "%02d", val);
+    }
+    void setMinute(int value) {
+        CharSequence text = formatMinute(value);
         Utils.tryAccessibilityAnnounce(mTimePicker, text);
         mMinuteView.setText(text);
         mMinuteSpaceView.setText(text);
     }
 
     // Show either Hours or Minutes.
-    private void setCurrentItemShowing(int index, boolean animateCircle, boolean delayLabelAnimate,
+    void setCurrentItemShowing(int index, boolean animateCircle, boolean delayLabelAnimate,
             boolean announce) {
         mTimePicker.setCurrentItemShowing(index, animateCircle);
 

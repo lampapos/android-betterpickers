@@ -1,17 +1,17 @@
 package com.doomonafireball.betterpickers.sample.activity.radialtimepicker;
 
-import com.doomonafireball.betterpickers.radialtimepicker.RadialTimePickerDialog;
-import com.doomonafireball.betterpickers.sample.R;
-import com.doomonafireball.betterpickers.sample.activity.BaseSampleActivity;
-
-import org.joda.time.DateTime;
-
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.text.format.DateFormat;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+
+import com.doomonafireball.betterpickers.radialtimepicker.RadialTimePickerDialog;
+import com.doomonafireball.betterpickers.sample.R;
+import com.doomonafireball.betterpickers.sample.activity.BaseSampleActivity;
+
+import org.joda.time.DateTime;
 
 /**
  * User: derek Date: 3/17/13 Time: 3:59 PM
@@ -41,7 +41,7 @@ public class SampleRadialTimeDark extends BaseSampleActivity
                 DateTime now = DateTime.now();
                 RadialTimePickerDialog timePickerDialog = RadialTimePickerDialog
                         .newInstance(SampleRadialTimeDark.this, now.getHourOfDay(), now.getMinuteOfHour(),
-                                DateFormat.is24HourFormat(SampleRadialTimeDark.this));
+                                DateFormat.is24HourFormat(SampleRadialTimeDark.this), null);
                 timePickerDialog.setThemeDark(true);
                 timePickerDialog.show(fm, FRAG_TAG_TIME_PICKER);
             }
