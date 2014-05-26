@@ -11,6 +11,8 @@ import com.doomonafireball.betterpickers.R;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  * @author Olexandr Tereshchuk - "Stanfy"
@@ -36,6 +38,8 @@ public class RadialPeriodTimePickerDialog extends RadialTimePickerDialog {
   private boolean crossDay = false;
 
   private final Calendar calendar = Calendar.getInstance();
+
+  private final TreeMap<Integer, TreeSet<Integer>> validTimes = new TreeMap<>();
 
 
   public static RadialPeriodTimePickerDialog newInstance(OnTimeSetListener callback,
@@ -97,9 +101,23 @@ public class RadialPeriodTimePickerDialog extends RadialTimePickerDialog {
     calendar.clear(Calendar.MILLISECOND);
 
     final int maxDelta = 60 * 1000 - 1;
+    windows.clear();
+    validTimes.clear();
     while (this.endTime.getTime() - calendar.getTimeInMillis() > maxDelta) {
       windows.add(calendar.getTime());
-      calendar.add(Calendar.MINUTE, this.period);
+
+      for (int i = -1; i < period; i++) {
+        if (i >= 0) {
+          calendar.add(Calendar.MINUTE, 1);
+        }
+        Integer hour = calendar.get(Calendar.HOUR_OF_DAY);
+        TreeSet<Integer> minutes = validTimes.get(hour);
+        if (minutes == null) {
+          minutes = new TreeSet<>();
+          validTimes.put(hour, minutes);
+        }
+        minutes.add(calendar.get(Calendar.MINUTE));
+      }
     }
   }
 
@@ -127,7 +145,7 @@ public class RadialPeriodTimePickerDialog extends RadialTimePickerDialog {
       mAmPmTextEndView.setVisibility(View.VISIBLE);
     }
 
-    ((RadialPeriodPickerLayout) mTimePicker).setPeriod(period);
+    ((RadialPeriodPickerLayout) mTimePicker).setTimeWindows(period, validTimes);
 
     return view;
   }
@@ -165,16 +183,30 @@ public class RadialPeriodTimePickerDialog extends RadialTimePickerDialog {
       calendar.add(Calendar.DAY_OF_YEAR, 1);
     }
 
-    Date window = null;
-    for (int i = 0; i < windows.size(); i++) {
-      if (windows.get(i).getTime() > calendar.getTimeInMillis()) {
-        window = windows.get(i);
+    Date selectedWindow = null;
+    for (final Date window : windows) {
+      final long time = calendar.getTimeInMillis();
+      final long windowStart = window.getTime();
+      if (time >= windowStart && time <= windowStart + period * 60 * 1000) {
+        selectedWindow = window;
         break;
       }
     }
-    if (window == null) { window = windows.get(windows.size() - 1); }
+    if (selectedWindow == null) { selectedWindow = windows.get(windows.size() - 1); }
 
-    calendar.setTime(window);
+    calendar.setTime(selectedWindow);
+
+    final int windowHourStart = calendar.get(Calendar.HOUR_OF_DAY);
+    final int windowMinuteStart = calendar.get(Calendar.MINUTE);
+
+    ((RadialPeriodPickerLayout) mTimePicker).updateValues(windowHourStart, windowMinuteStart,
+        (mIs24HourMode ? mTimePicker.getIsCurrentlyAmOrPm() : (windowHourStart < 12 ? AM : PM)));
+
+    superSetHour(windowHourStart, true);
+    superSetMinute(windowMinuteStart);
+    superUpdateAmPmDisplay(mTimePicker.getIsCurrentlyAmOrPm());
+
+    calendar.add(Calendar.MINUTE, period);
 
     CharSequence text = formatHour(calendar.get(Calendar.HOUR_OF_DAY));
     mHourEndView.setText(text);
@@ -189,15 +221,5 @@ public class RadialPeriodTimePickerDialog extends RadialTimePickerDialog {
     } else {
       mAmPmTextEndView.setText(mPmText);
     }
-
-    calendar.add(Calendar.MINUTE, -period);
-    final int windowHourStart = calendar.get(Calendar.HOUR_OF_DAY);
-    final int windowMinuteStart = calendar.get(Calendar.MINUTE);
-    mTimePicker.setAmOrPm(mIs24HourMode ? mTimePicker.getIsCurrentlyAmOrPm() : (windowHourStart < 12 ? AM : PM));
-    mTimePicker.setTime(windowHourStart, windowMinuteStart);
-
-    superSetHour(windowHourStart, true);
-    superSetMinute(windowMinuteStart);
-    superUpdateAmPmDisplay(mTimePicker.getIsCurrentlyAmOrPm());
   }
 }

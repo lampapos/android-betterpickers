@@ -18,7 +18,10 @@ public class RadialPeriodSelectorView extends RadialSelectorView {
     super(context);
   }
 
-  public void setPeriodDegrees(final int periodDegrees) { this.periodDegrees = periodDegrees; }
+  public void setPeriodDegrees(final int periodDegrees) {
+    this.periodDegrees = periodDegrees;
+    invalidate();
+  }
 
   @Override
   public void onDraw(Canvas canvas) {
@@ -42,5 +45,10 @@ public class RadialPeriodSelectorView extends RadialSelectorView {
       mPaint.setAlpha(100);
       canvas.drawArc(mCircleRect, (float) Math.toDegrees(mSelectionRadians) - periodDegrees, periodDegrees, true, mPaint);
     }
+  }
+
+  @Override
+  boolean shouldDrawSelection() {
+    return periodDegrees == 0;
   }
 }

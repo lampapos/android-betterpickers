@@ -300,26 +300,32 @@ public class RadialSelectorView extends View {
         int pointY = mYCenter - (int) (mLineLength * Math.cos(mSelectionRadians));
 
         // Draw the selection circle.
-        mPaint.setAlpha(mSelectionAlpha);
-        canvas.drawCircle(pointX, pointY, mSelectionRadius, mPaint);
+        if (shouldDrawSelection()) {
+          mPaint.setAlpha(mSelectionAlpha);
+          canvas.drawCircle(pointX, pointY, mSelectionRadius, mPaint);
 
-        if (mForceDrawDot | mSelectionDegrees % 30 != 0) {
+          if (mForceDrawDot || mSelectionDegrees % 30 != 0) {
             // We're not on a direct tick (or we've been told to draw the dot anyway).
             mPaint.setAlpha(FULL_ALPHA);
             canvas.drawCircle(pointX, pointY, (mSelectionRadius * 2 / 7), mPaint);
-        } else {
+          } else {
             // We're not drawing the dot, so shorten the line to only go as far as the edge of the
             // selection circle.
             int lineLength = mLineLength;
             lineLength -= mSelectionRadius;
             pointX = mXCenter + (int) (lineLength * Math.sin(mSelectionRadians));
             pointY = mYCenter - (int) (lineLength * Math.cos(mSelectionRadians));
+          }
         }
 
         // Draw the line from the center of the circle.
         mPaint.setAlpha(255);
         mPaint.setStrokeWidth(1);
         canvas.drawLine(mXCenter, mYCenter, pointX, pointY, mPaint);
+    }
+
+    boolean shouldDrawSelection() {
+      return true;
     }
 
     public ObjectAnimator getDisappearAnimator() {

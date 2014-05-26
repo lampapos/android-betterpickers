@@ -45,34 +45,38 @@ public class RadialPickerLayout extends FrameLayout implements OnTouchListener {
 
     private static final String TAG = "RadialPickerLayout";
 
+    static final int[] hours = {12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+    static final int[] hours24 = {0, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23};
+    static final int[] minutes = {0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55};
+
     private final int TOUCH_SLOP;
     private final int TAP_TIMEOUT;
 
     private static final int VISIBLE_DEGREES_STEP_SIZE = 30;
     static final int HOUR_VALUE_TO_DEGREES_STEP_SIZE = VISIBLE_DEGREES_STEP_SIZE;
     static final int MINUTE_VALUE_TO_DEGREES_STEP_SIZE = 6;
-    private static final int HOUR_INDEX = RadialTimePickerDialog.HOUR_INDEX;
-    private static final int MINUTE_INDEX = RadialTimePickerDialog.MINUTE_INDEX;
+    static final int HOUR_INDEX = RadialTimePickerDialog.HOUR_INDEX;
+    static final int MINUTE_INDEX = RadialTimePickerDialog.MINUTE_INDEX;
     private static final int AMPM_INDEX = RadialTimePickerDialog.AMPM_INDEX;
     private static final int ENABLE_PICKER_INDEX = RadialTimePickerDialog.ENABLE_PICKER_INDEX;
     private static final int AM = RadialTimePickerDialog.AM;
     private static final int PM = RadialTimePickerDialog.PM;
 
-    private int mLastValueSelected;
+    int mLastValueSelected;
 
     private HapticFeedbackController mHapticFeedbackController;
     private OnValueSelectedListener mListener;
     private boolean mTimeInitialized;
     private int mCurrentHoursOfDay;
     private int mCurrentMinutes;
-    private boolean mIs24HourMode;
+    boolean mIs24HourMode;
     private boolean mHideAmPm;
     private int mCurrentItemShowing;
 
     private CircleView mCircleView;
     private AmPmCirclesView mAmPmCirclesView;
-    private RadialTextsView mHourRadialTextsView;
-    private RadialTextsView mMinuteRadialTextsView;
+    RadialTextsView mHourRadialTextsView;
+    RadialTextsView mMinuteRadialTextsView;
     RadialSelectorView mHourRadialSelectorView;
     RadialSelectorView mMinuteRadialSelectorView;
     private View mGrayBox;
@@ -89,6 +93,8 @@ public class RadialPickerLayout extends FrameLayout implements OnTouchListener {
 
     private AnimatorSet mTransition;
     private Handler mHandler = new Handler();
+
+    boolean blockPickerViewUpdate = false;
 
     public interface OnValueSelectedListener {
 
@@ -187,9 +193,6 @@ public class RadialPickerLayout extends FrameLayout implements OnTouchListener {
 
         // Initialize the hours and minutes numbers.
         Resources res = context.getResources();
-        int[] hours = {12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
-        int[] hours24 = {0, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23};
-        int[] minutes = {0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55};
         String[] hoursTexts = new String[12];
         String[] innerHoursTexts = new String[12];
         String[] minutesTexts = new String[12];
@@ -199,11 +202,7 @@ public class RadialPickerLayout extends FrameLayout implements OnTouchListener {
             innerHoursTexts[i] = String.format("%d", hours[i]);
             minutesTexts[i] = String.format("%02d", minutes[i]);
         }
-        mHourRadialTextsView.initialize(res,
-                hoursTexts, (is24HourMode ? innerHoursTexts : null), mHideAmPm, true);
-        mHourRadialTextsView.invalidate();
-        mMinuteRadialTextsView.initialize(res, minutesTexts, null, mHideAmPm, false);
-        mMinuteRadialTextsView.invalidate();
+        initializeHoursAndMinuteNumbers(res, hoursTexts, (is24HourMode ? innerHoursTexts : null), minutesTexts);
 
         // Initialize the currently-selected hour and minute.
         setValueForItem(HOUR_INDEX, initialHoursOfDay);
@@ -216,6 +215,13 @@ public class RadialPickerLayout extends FrameLayout implements OnTouchListener {
                 minuteDegrees, false);
 
         mTimeInitialized = true;
+    }
+
+    void initializeHoursAndMinuteNumbers(final Resources res, final String[] hoursTexts, final String[] innerHoursTexts, final String[] minutesTexts) {
+      mHourRadialTextsView.initialize(res, hoursTexts, innerHoursTexts, mHideAmPm, true);
+      mHourRadialTextsView.invalidate();
+      mMinuteRadialTextsView.initialize(res, minutesTexts, null, mHideAmPm, false);
+      mMinuteRadialTextsView.invalidate();
     }
 
     /* package */ void setTheme(Context context, boolean themeDark) {
@@ -453,8 +459,10 @@ public class RadialPickerLayout extends FrameLayout implements OnTouchListener {
             stepSize = MINUTE_VALUE_TO_DEGREES_STEP_SIZE;
         }
 
-        radialSelectorView.setSelection(degrees, isInnerCircle, forceDrawDot);
-        radialSelectorView.invalidate();
+        if (!blockPickerViewUpdate) {
+          radialSelectorView.setSelection(degrees, isInnerCircle, forceDrawDot);
+          radialSelectorView.invalidate();
+        }
 
         if (currentShowing == HOUR_INDEX) {
             if (mIs24HourMode) {
@@ -662,6 +670,7 @@ public class RadialPickerLayout extends FrameLayout implements OnTouchListener {
                 degrees = getDegreesFromCoords(eventX, eventY, true, isInnerCircle);
                 if (degrees != -1) {
                     value = reselectSelector(degrees, isInnerCircle[0], false, true);
+                    setValueForItem(getCurrentItemShowing(), value);
                     if (value != mLastValueSelected) {
                         mHapticFeedbackController.tryVibrate();
                         mLastValueSelected = value;

@@ -23,6 +23,7 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Align;
 import android.graphics.Typeface;
@@ -30,6 +31,8 @@ import android.util.Log;
 import android.view.View;
 
 import com.doomonafireball.betterpickers.R;
+
+import java.util.Arrays;
 
 /**
  * A view to show a series of numbers in a circular pattern.
@@ -47,6 +50,8 @@ public class RadialTextsView extends View {
     private Typeface mTypefaceRegular;
     private String[] mTexts;
     private String[] mInnerTexts;
+    private boolean[] mEnabledTexts;
+    private boolean[] mEnabledInnerTexts;
     private boolean mIs24HourMode;
     private boolean mHasInnerCircle;
     private float mCircleRadiusMultiplier;
@@ -80,6 +85,13 @@ public class RadialTextsView extends View {
     }
 
     public void initialize(Resources res, String[] texts, String[] innerTexts,
+                           boolean is24HourMode, boolean disappearsOut) {
+      final boolean[] enabled = new boolean[12];
+      Arrays.fill(enabled, true);
+      initialize(res, texts, innerTexts, enabled, enabled, is24HourMode, disappearsOut);
+    }
+
+    public void initialize(Resources res, String[] texts, String[] innerTexts, boolean[] enabledTexts, boolean[] enabledInnerTexts,
             boolean is24HourMode, boolean disappearsOut) {
         if (mIsInitialized) {
             Log.e(TAG, "This RadialTextsView may only be initialized once.");
@@ -100,6 +112,8 @@ public class RadialTextsView extends View {
         mInnerTexts = innerTexts;
         mIs24HourMode = is24HourMode;
         mHasInnerCircle = (innerTexts != null);
+        mEnabledInnerTexts = enabledInnerTexts;
+        mEnabledTexts = enabledTexts;
 
         // Calculate the radius for the main circle.
         if (is24HourMode) {
@@ -152,6 +166,12 @@ public class RadialTextsView extends View {
             textColor = res.getColor(R.color.numbers_text_color);
         }
         mPaint.setColor(textColor);
+    }
+
+    public void setEnabledTexts(final boolean[] enabledTexts, final boolean[] enabledInnerTexts) {
+      mEnabledTexts = enabledTexts;
+      mEnabledInnerTexts = enabledInnerTexts;
+      invalidate();
     }
 
     /**
@@ -220,10 +240,10 @@ public class RadialTextsView extends View {
         }
 
         // Draw the texts in the pre-calculated positions.
-        drawTexts(canvas, mTextSize, mTypefaceLight, mTexts, mTextGridWidths, mTextGridHeights);
+        drawTexts(canvas, mTextSize, mTypefaceLight, mTexts, mTextGridWidths, mTextGridHeights, mEnabledTexts);
         if (mHasInnerCircle) {
             drawTexts(canvas, mInnerTextSize, mTypefaceRegular, mInnerTexts,
-                    mInnerTextGridWidths, mInnerTextGridHeights);
+                    mInnerTextGridWidths, mInnerTextGridHeights, mEnabledInnerTexts);
         }
     }
 
@@ -265,21 +285,31 @@ public class RadialTextsView extends View {
      * Draw the 12 text values at the positions specified by the textGrid parameters.
      */
     private void drawTexts(Canvas canvas, float textSize, Typeface typeface, String[] texts,
-            float[] textGridWidths, float[] textGridHeights) {
+            float[] textGridWidths, float[] textGridHeights, final boolean[] enabledTexts) {
         mPaint.setTextSize(textSize);
         mPaint.setTypeface(typeface);
-        canvas.drawText(texts[0], textGridWidths[3], textGridHeights[0], mPaint);
-        canvas.drawText(texts[1], textGridWidths[4], textGridHeights[1], mPaint);
-        canvas.drawText(texts[2], textGridWidths[5], textGridHeights[2], mPaint);
-        canvas.drawText(texts[3], textGridWidths[6], textGridHeights[3], mPaint);
-        canvas.drawText(texts[4], textGridWidths[5], textGridHeights[4], mPaint);
-        canvas.drawText(texts[5], textGridWidths[4], textGridHeights[5], mPaint);
-        canvas.drawText(texts[6], textGridWidths[3], textGridHeights[6], mPaint);
-        canvas.drawText(texts[7], textGridWidths[2], textGridHeights[5], mPaint);
-        canvas.drawText(texts[8], textGridWidths[1], textGridHeights[4], mPaint);
-        canvas.drawText(texts[9], textGridWidths[0], textGridHeights[3], mPaint);
-        canvas.drawText(texts[10], textGridWidths[1], textGridHeights[2], mPaint);
-        canvas.drawText(texts[11], textGridWidths[2], textGridHeights[1], mPaint);
+        final int enabledColor = mPaint.getColor();
+        final int disabledColor = (enabledColor | Color.BLACK) & 0x5AFFFFFF;
+
+        drawText(canvas, texts[0], textGridWidths[3], textGridHeights[0], enabledTexts[0] ? enabledColor : disabledColor);
+        drawText(canvas, texts[1], textGridWidths[4], textGridHeights[1], enabledTexts[1] ? enabledColor : disabledColor);
+        drawText(canvas, texts[2], textGridWidths[5], textGridHeights[2], enabledTexts[2] ? enabledColor : disabledColor);
+        drawText(canvas, texts[3], textGridWidths[6], textGridHeights[3], enabledTexts[3] ? enabledColor : disabledColor);
+        drawText(canvas, texts[4], textGridWidths[5], textGridHeights[4], enabledTexts[4] ? enabledColor : disabledColor);
+        drawText(canvas, texts[5], textGridWidths[4], textGridHeights[5], enabledTexts[5] ? enabledColor : disabledColor);
+        drawText(canvas, texts[6], textGridWidths[3], textGridHeights[6], enabledTexts[6] ? enabledColor : disabledColor);
+        drawText(canvas, texts[7], textGridWidths[2], textGridHeights[5], enabledTexts[7] ? enabledColor : disabledColor);
+        drawText(canvas, texts[8], textGridWidths[1], textGridHeights[4], enabledTexts[8] ? enabledColor : disabledColor);
+        drawText(canvas, texts[9], textGridWidths[0], textGridHeights[3], enabledTexts[9] ? enabledColor : disabledColor);
+        drawText(canvas, texts[10], textGridWidths[1], textGridHeights[2], enabledTexts[10] ? enabledColor : disabledColor);
+        drawText(canvas, texts[11], textGridWidths[2], textGridHeights[1], enabledTexts[11] ? enabledColor : disabledColor);
+
+        mPaint.setColor(enabledColor);
+    }
+
+    private void drawText(Canvas canvas, String text, float textWidth, float textHeight, int color) {
+      mPaint.setColor(color);
+      canvas.drawText(text, textWidth, textHeight, mPaint);
     }
 
     /**
